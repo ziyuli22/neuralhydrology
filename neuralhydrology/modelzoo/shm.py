@@ -1,6 +1,7 @@
 import torch
 from typing import Dict, Union
 from neuralhydrology.modelzoo.baseconceptualmodel import BaseConceptualModel
+from neuralhydrology.utils.conceptual_utils import daily_jensen_haise_pet
 from neuralhydrology.utils.config import Config
 
 
@@ -39,8 +40,13 @@ class SHM(BaseConceptualModel):
             Tensor of size [batch_size, time_steps, n_inputs]. The batch_size is associated with a certain basin and a
             certain prediction period. The time_steps refer to the number of time steps (e.g. days) that our conceptual
             model is going to be run for. The n_inputs refer to the dynamic forcings used to run the conceptual model
-            (e.g. Precipitation, Temperature...)
-
+            (e.g. Precipitation, Temperature...).
+            In order of n_inputs:
+                0: Precipitation [mm/day]
+                1: PET [mm/day] (for CAMELS_GB); use SRAD [W/m2] for non-CAMELS_GB
+                2: Tmin [°C]
+                3: Tmax [°C]
+            
         lstm_out: torch.Tensor
             Tensor of size [batch_size, time_steps, n_parameters]. The tensor comes from the data-driven model  and will
             be used to obtained the dynamic parameterization of the conceptual model
@@ -55,6 +61,7 @@ class SHM(BaseConceptualModel):
             - internal_states: Dict[str, torch.Tensor]]
                 Time-evolution of the internal states of the conceptual model
         """
+        
         # get model parameters
         parameters = self._get_dynamic_parameters_conceptual(lstm_out=lstm_out)
 
@@ -114,11 +121,19 @@ class SHM(BaseConceptualModel):
             su_temp = su + qu_in * (1 - psi)
             su = torch.minimum(su_temp, parameters['sumax'][:, j])
             qu_out = qu_in * psi + torch.maximum(zero, su_temp - parameters['sumax'][:, j])  # [mm]
+            
             # Evapotranspiration -------------------
             ktetha = su / parameters['sumax'][:, j]
             et_mask = su <= pwp[:, j]
             ktetha[~et_mask] = one
-            ret = x_conceptual[:, j, 1] * klu * ktetha  # [mm]
+            if self.cfg.dataset == "camels_gb":
+                pet = x_conceptual[:, j, 1]
+            else:
+                pet = daily_jensen_haise_pet(
+                    T_avg=t_mean[:, j],
+                    S_rad=x_conceptual[:, j, 1],
+                )
+            ret = pet * klu * ktetha  # [mm]
             su = torch.maximum(zero, su - ret)  # [mm]
 
             # Interflow reservoir ------------------
