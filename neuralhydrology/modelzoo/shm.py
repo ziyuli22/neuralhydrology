@@ -128,11 +128,14 @@ class SHM(BaseConceptualModel):
             ktetha[~et_mask] = one
             if self.cfg.dataset == "camels_gb":
                 pet = x_conceptual[:, j, 1]
-            else:
+            elif self.cfg.dataset == "camels_us":
                 pet = daily_jensen_haise_pet(
                     T_avg=t_mean[:, j],
                     S_rad=x_conceptual[:, j, 1],
                 )
+            else:
+                ValueError('Check if x_conceptual provides pet.')
+
             ret = pet * klu * ktetha  # [mm]
             su = torch.maximum(zero, su - ret)  # [mm]
 
