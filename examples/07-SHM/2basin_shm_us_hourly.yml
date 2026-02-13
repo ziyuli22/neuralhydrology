@@ -1,7 +1,7 @@
 # --- Experiment configurations --------------------------------------------------------------------
 
 # experiment name, used as folder name
-experiment_name: test_SHM
+experiment_name: test_SHM_US_Hourly
 
 # files to specify training, validation and test basins (relative to code root or absolute path)
 train_basin_file: 2_basin.txt
@@ -84,7 +84,7 @@ learning_rate:
 batch_size: 256
 
 # Number of training epochs
-epochs: 10
+epochs: 4
 
 # If a value, clips the gradients during training to that norm.
 clip_gradient_norm: 1
@@ -118,7 +118,7 @@ seed: 123 # random seed for reproducibility
 # --- Data configurations --------------------------------------------------------------------------
 
 # which data set to use [camels_us, camels_gb, global, hourly_camels_us]
-dataset: camels_us
+dataset: hourly_camels_us
 
 # Path to data set root
 data_dir: /Users/ziyu/Library/CloudStorage/OneDrive-ColoradoSchoolofMines/Documents/College/ResearchStuff/NextGen/Code/data/CAMELS_US
@@ -127,56 +127,48 @@ data_dir: /Users/ziyu/Library/CloudStorage/OneDrive-ColoradoSchoolofMines/Docume
 # Forcing product [daymet, maurer, maurer_extended, nldas, nldas_extended, nldas_hourly]
 # can be either a list of forcings or a single forcing product
 forcings:
-  - maurer
-  - daymet
-  - nldas
+- nldas_hourly
 
 dynamic_inputs:
-  - PRCP(mm/day)_nldas
-  - PRCP(mm/day)_maurer
-  - prcp(mm/day)_daymet
-  - srad(W/m2)_daymet
-  - tmax(C)_daymet
-  - tmin(C)_daymet
-  - vp(Pa)_daymet
+  - longwave_radiation
+  - potential_evaporation
+  - pressure
+  - temperature
+  - total_precipitation
 
 # static_attributes:
 #  - elev_mean
 #  - slope_mean
 
 duplicate_features:
-  - PRCP(mm/day)_nldas
-  - tmax(C)_daymet
-  - tmin(C)_daymet
-  - srad(W/m2)_daymet
+  - total_precipitation
+  - longwave_radiation
+  - temperature
 
 dynamic_conceptual_inputs:
-  - PRCP(mm/day)_nldas_copy1
-  - srad(W/m2)_daymet_copy1
-  - tmin(C)_daymet_copy1
-  - tmax(C)_daymet_copy1
+  - total_precipitation_copy1
+  - longwave_radiation_copy1
+  - temperature_copy1
+  - temperature_copy1
 
 custom_normalization:
-  QObs(mm/d):
+  QObs(mm/h):
     centering: None
     scaling: None
-  PRCP(mm/day)_nldas_copy1:
+  total_precipitation_copy1:
     centering: None
     scaling: None
-  srad(W/m2)_daymet_copy1:
+  longwave_radiation_copy1:
     centering: None
     scaling: None
-  tmin(C)_daymet_copy1:
-    centering: None
-    scaling: None
-  tmax(C)_daymet_copy1:
+  temperature_copy1:
     centering: None
     scaling: None
 
 # which columns to use as target
 target_variables:
-  - QObs(mm/d)
+  - QObs(mm/h)
 
 # clip negative predictions to zero for all variables listed below. Should be a list, even for single variables.
 clip_targets_to_zero:
-  - QObs(mm/d)
+  - QObs(mm/h)

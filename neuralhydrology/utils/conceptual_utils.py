@@ -35,8 +35,7 @@ def daily_jensen_haise_pet(T_avg: torch.Tensor, S_rad: torch.Tensor) -> torch.Te
         S_rad * SECONDS_to_DAYS * J_to_MJ
     ) # convert shortwave radiation [W/m^2] to [MJ/m^2 day]
     lambd_latent_heat_vaporization_MJ_per_kg = 2.501 - 0.002361 * T_avg # linear imperical relationship
-    pet_mm_per_day = (0.025 * shortRad_MJ_per_m2_day * (T_avg - (-3.0)) / lambd_latent_heat_vaporization_MJ_per_kg)
-    pet_mm_per_day_mask = pet_mm_per_day < 0  # make mask for negative PET
-    pet_mm_per_day = torch.where(pet_mm_per_day_mask, 0, pet_mm_per_day)  # clip negative PET to 0
-        
+    pet_mm_per_day_raw = (0.025 * shortRad_MJ_per_m2_day * (T_avg - (-3.0)) / lambd_latent_heat_vaporization_MJ_per_kg)
+    pet_mm_per_day = torch.clamp(pet_mm_per_day_raw, min = 0)
+    
     return pet_mm_per_day
