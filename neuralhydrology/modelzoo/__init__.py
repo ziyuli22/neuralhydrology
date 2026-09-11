@@ -12,6 +12,7 @@ from neuralhydrology.modelzoo.handoff_forecast_lstm import HandoffForecastLSTM
 from neuralhydrology.modelzoo.hybridmodel import HybridModel
 from neuralhydrology.modelzoo.gru import GRU
 from neuralhydrology.modelzoo.mclstm import MCLSTM
+from neuralhydrology.modelzoo.minlstm import MinLSTM
 from neuralhydrology.modelzoo.mtslstm import MTSLSTM
 from neuralhydrology.modelzoo.multihead_forecast_lstm import MultiHeadForecastLSTM
 from neuralhydrology.modelzoo.odelstm import ODELSTM
@@ -36,7 +37,8 @@ SINGLE_FREQ_MODELS = [
     "sequential_forecast_lstm",
     "multihead_forecast_lstm",
     "stacked_forecast_lstm",
-    "x_lstm"
+    "x_lstm",
+    "minlstm"
 ]
 AUTOREGRESSIVE_MODELS = ['arlstm']
 
@@ -102,6 +104,8 @@ def get_model(cfg: Config) -> nn.Module:
         model = StackedForecastLSTM(cfg=cfg)
     elif cfg.model.lower() == "hybrid_model":
         model = HybridModel(cfg=cfg)
+    elif cfg.model.lower() == "minlstm":
+        model = MinLSTM(cfg=cfg)
     else:
         raise NotImplementedError(f"{cfg.model} not implemented or not linked in `get_model()`")
 
